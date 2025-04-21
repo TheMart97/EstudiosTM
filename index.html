@@ -1,0 +1,3239 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tareas Escolares</title>
+  <script src="https://cdn.jsdelivr.net/npm/websim-socket@latest/dist/websim-socket.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+  <style>
+    :root {
+      --bg-primary: #0f0f0f;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #232323;
+      --surface-elevated: #2d2d2d;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --accent-primary: #8ab4f8;
+      --accent-secondary: #669df6;
+      --error: #f28b82;
+      --success: #81c995;
+      --warning: #fdd663;
+      --priority-high: #f28b82;
+      --priority-medium: #fdd663;
+      --priority-low: #8ab4f8;
+      --border-radius: 12px;
+      --border-radius-sm: 8px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      --transition-standard: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      line-height: 1.5;
+    }
+
+    #app {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    /* App header */
+    header {
+      padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: var(--bg-primary);
+      backdrop-filter: blur(10px);
+      transition: var(--transition-standard);
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: var(--spacing-xs);
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: slideDown 0.5s forwards;
+    }
+
+    /* Container styles */
+    .container {
+      padding: 0 var(--spacing-md);
+    }
+
+    /* Card styles */
+    .card {
+      background-color: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      box-shadow: var(--shadow);
+      transition: var(--transition-standard);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    /* Button styles */
+    .btn {
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 20px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-standard);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      position: relative;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    .btn:hover, .btn:focus {
+      background-color: var(--accent-secondary);
+      outline: none;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.8);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+    }
+
+    .btn:active::after {
+      animation: ripple 0.6s ease-out;
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0) translate(-50%, -50%);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(20, 20) translate(-50%, -50%);
+        opacity: 0;
+      }
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-fab {
+      position: fixed;
+      bottom: 80px;
+      right: var(--spacing-md);
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background-color: var(--accent-primary);
+      box-shadow: var(--shadow);
+      z-index: 9;
+      transition: var(--transition-standard);
+    }
+
+    .btn-fab:hover {
+      transform: scale(1.05) translateY(-4px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-fab:active {
+      transform: scale(0.95);
+    }
+
+    .btn-fab i {
+      font-size: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-fab:hover i {
+      transform: rotate(90deg);
+    }
+
+    /* Bottom navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--bg-secondary);
+      display: flex;
+      justify-content: space-around;
+      padding: var(--spacing-xs) 0;
+      box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--spacing-xs);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 12px;
+      transition: var(--transition-standard);
+      user-select: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item.active {
+      color: var(--accent-primary);
+    }
+
+    .nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background-color: var(--accent-primary);
+      transition: var(--transition-standard);
+      transform: translateX(-50%);
+      opacity: 0;
+    }
+
+    .nav-item.active::after {
+      width: 24px;
+      opacity: 1;
+    }
+
+    .nav-item .material-icons-round {
+      font-size: 22px;
+      margin-bottom: var(--spacing-xs);
+      transition: transform 0.3s ease;
+    }
+
+    .nav-item.active .material-icons-round {
+      transform: translateY(-2px);
+    }
+
+    /* Form styles */
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      background-color: var(--bg-tertiary);
+      border: 1px solid transparent;
+      border-radius: var(--border-radius-sm);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      padding: var(--spacing-md);
+      width: 100%;
+      transition: var(--transition-standard);
+      font-size: 15px;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+    }
+
+    select.form-control {
+      appearance: none;
+      padding-right: 30px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-color: var(--bg-secondary);
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      padding: var(--spacing-md);
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 24px;
+      transition: var(--transition-standard);
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+      transform: rotate(90deg);
+    }
+
+    /* Task and exam items */
+    .task-item, .exam-item, .note-item {
+      padding: var(--spacing-md);
+      background-color: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--spacing-md);
+      position: relative;
+      transition: var(--transition-standard);
+      animation: fadeIn 0.5s ease;
+      overflow: hidden;
+    }
+
+    .task-item::before, .exam-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 2px 0 0 2px;
+    }
+
+    .task-item.priority-high::before {
+      background-color: var(--priority-high);
+    }
+
+    .task-item.priority-medium::before {
+      background-color: var(--priority-medium);
+    }
+
+    .task-item.priority-low::before {
+      background-color: var(--priority-low);
+    }
+
+    .task-item .subject-badge, .exam-item .subject-badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: var(--spacing-xs);
+      background-color: rgba(138, 180, 248, 0.15);
+      color: var(--accent-primary);
+      font-weight: 500;
+    }
+
+    .task-item h3, .exam-item h3, .note-item h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .task-item p, .exam-item p, .note-item p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: var(--spacing-sm);
+      line-height: 1.5;
+    }
+
+    .task-meta, .exam-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: var(--spacing-sm);
+    }
+
+    .grade-badge {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-weight: 500;
+      font-size: 13px;
+      transition: var(--transition-standard);
+    }
+
+    .grade-badge.high {
+      background-color: var(--success);
+      color: var(--bg-primary);
+    }
+
+    .grade-badge.medium {
+      background-color: var(--warning);
+      color: var(--bg-primary);
+    }
+
+    .grade-badge.low {
+      background-color: var(--error);
+      color: var(--text-primary);
+    }
+
+    /* Priority selector */
+    .priority-selector {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .priority-option {
+      flex: 1;
+      padding: var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition-standard);
+      border: 2px solid transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .priority-option.selected {
+      border-color: currentColor;
+      color: var(--text-primary);
+    }
+
+    .priority-option.high {
+      background-color: rgba(242, 139, 130, 0.2);
+      color: var(--priority-high);
+    }
+
+    .priority-option.medium {
+      background-color: rgba(253, 214, 99, 0.2);
+      color: var(--priority-medium);
+    }
+
+    .priority-option.low {
+      background-color: rgba(138, 180, 248, 0.2);
+      color: var(--priority-low);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideLeft {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes celebrate {
+      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+      10% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+      20% { transform: scale(0.9) rotate(-10deg); }
+      30% { transform: scale(1.1) rotate(5deg); }
+      40% { transform: scale(0.95) rotate(-5deg); }
+      50% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    /* Achievement animation */
+    .celebration-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .celebration-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .celebration-icon {
+      font-size: 70px;
+      color: var(--success);
+      animation: celebrate 1.5s ease forwards;
+      z-index: 2;
+    }
+
+    .celebration-particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .page-transition {
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-lg);
+      text-align: center;
+      color: var(--text-secondary);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .empty-state i {
+      font-size: 56px;
+      margin-bottom: var(--spacing-md);
+      opacity: 0.7;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .empty-state p {
+      font-size: 15px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    /* Loading spinner */
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--accent-primary);
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      margin: var(--spacing-lg) auto;
+      display: flex;
+    }
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      padding: var(--spacing-xs) 0;
+      margin-bottom: var(--spacing-md);
+      scrollbar-width: none;
+      transition: var(--transition-standard);
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: var(--spacing-xs) var(--spacing-md);
+      color: var(--text-secondary);
+      border: none;
+      background: none;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-standard);
+      font-size: 14px;
+    }
+
+    .tab.active {
+      color: var(--accent-primary);
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 3px;
+      background-color: var(--accent-primary);
+      border-radius: 3px;
+      animation: slideDown 0.3s ease;
+    }
+
+    /* Notification dot */
+    .notification-dot {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--error);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    /* Notification area */
+    .notification-area {
+      position: fixed;
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      left: var(--spacing-md);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      pointer-events: none;
+    }
+
+    .notification {
+      background-color: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: var(--spacing-md);
+      animation: slideInRight 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+      pointer-events: auto;
+      border-left: 3px solid var(--accent-primary);
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+
+    /* Subject filter */
+    .subject-filter {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: var(--spacing-xs) 0;
+      margin-bottom: var(--spacing-md);
+      scrollbar-width: none;
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .subject-filter::-webkit-scrollbar {
+      display: none;
+    }
+
+    .subject-chip {
+      background-color: var(--bg-tertiary);
+      border-radius: 16px;
+      padding: 5px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-standard);
+      border: 1px solid transparent;
+    }
+
+    .subject-chip.active {
+      background-color: rgba(138, 180, 248, 0.15);
+      color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+    
+    /* Chart container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      margin: var(--spacing-md) 0;
+    }
+    
+    /* Insights card */
+    .insights-card {
+      background-color: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      border-left: 3px solid var(--accent-primary);
+    }
+    
+    .insights-card h3 {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .insights-card h3 i {
+      margin-right: var(--spacing-xs);
+      color: var(--accent-primary);
+    }
+    
+    .insights-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    /* Calendar view */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .calendar-header h3 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .calendar-header .nav-buttons {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+    
+    .calendar-header .nav-button {
+      background: var(--bg-tertiary);
+      border: none;
+      color: var(--text-secondary);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-standard);
+    }
+    
+    .calendar-header .nav-button:hover {
+      background: var(--surface-elevated);
+      color: var(--text-primary);
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .calendar-day-header {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: var(--spacing-xs) 0;
+    }
+    
+    .calendar-day {
+      aspect-ratio: 1/1;
+      background: var(--bg-tertiary);
+      border-radius: var(--border-radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px;
+      position: relative;
+      cursor: pointer;
+      transition: var(--transition-standard);
+    }
+    
+    .calendar-day .day-number {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .calendar-day.has-items::after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+    }
+    
+    .calendar-day.active {
+      background: rgba(138, 180, 248, 0.15);
+      border: 1px solid var(--accent-primary);
+    }
+    
+    .calendar-day.today {
+      background: rgba(138, 180, 248, 0.25);
+    }
+    
+    /* Note suggestion styles */
+    .suggestion-pill {
+      display: inline-block;
+      background-color: rgba(138, 180, 248, 0.15);
+      color: var(--accent-primary);
+      border-radius: 12px;
+      padding: 4px 10px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition-standard);
+    }
+    
+    .suggestion-pill:hover {
+      background-color: rgba(138, 180, 248, 0.25);
+    }
+    
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+    
+    /* Settings screen */
+    .settings-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+    
+    .settings-option-label {
+      font-size: 15px;
+    }
+    
+    .settings-option-description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-tertiary);
+      transition: .4s;
+      border-radius: 22px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: var(--text-secondary);
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: var(--accent-primary);
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="text/babel">
+    // Initialize database connection
+    const room = new WebsimSocket();
+    const { useState, useEffect, useRef, useMemo, useCallback, useSyncExternalStore } = React;
+
+    // Constants
+    const SUBJECTS = [
+      'Emprendimiento',
+      'Matemáticas',
+      'Lengua',
+      'Inglés',
+      'Historia',
+      'Filosofía',
+      'Ciudadanía',
+      'Física',
+      'Química',
+      'Biología',
+      'Robótica',
+      'Religión'
+    ];
+
+    const PRIORITIES = [
+      { value: 'high', label: 'Alta', color: 'var(--priority-high)' },
+      { value: 'medium', label: 'Media', color: 'var(--priority-medium)' },
+      { value: 'low', label: 'Baja', color: 'var(--priority-low)' }
+    ];
+
+    // Utility functions
+    const formatDate = (dateString) => {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
+    };
+    
+    const formatDateShort = (dateString) => {
+      const options = { day: 'numeric', month: 'short' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
+    };
+
+    function getGradeClass(grade) {
+      if (!grade && grade !== 0) return '';
+      if (grade >= 8) return 'high';
+      if (grade >= 6) return 'medium';
+      return 'low';
+    }
+    
+    // Get days in month
+    const getDaysInMonth = (year, month) => {
+      return new Date(year, month + 1, 0).getDate();
+    };
+    
+    // Get first day of month (0 = Sunday, 6 = Saturday)
+    const getFirstDayOfMonth = (year, month) => {
+      return new Date(year, month, 1).getDay();
+    };
+    
+    // Generate suggestions based on upcoming events
+    const generateSuggestions = (tasks, exams) => {
+      const suggestions = [];
+      
+      // Get upcoming exams
+      const upcomingExams = exams
+        .filter(exam => new Date(exam.exam_date) > new Date())
+        .sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date))
+        .slice(0, 3);
+      
+      upcomingExams.forEach(exam => {
+        suggestions.push(`Estudiar para ${exam.subject}: ${exam.title}`);
+        if (exam.description) {
+          const topics = exam.description.split(',');
+          topics.forEach(topic => {
+            if (topic.trim()) {
+              suggestions.push(`Repasar ${topic.trim()} para ${exam.subject}`);
+            }
+          });
+        }
+      });
+      
+      // Get upcoming tasks
+      const upcomingTasks = tasks
+        .filter(task => !task.completed && new Date(task.due_date) > new Date())
+        .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+        .slice(0, 3);
+      
+      upcomingTasks.forEach(task => {
+        suggestions.push(`Trabajar en ${task.title} para ${task.subject}`);
+        suggestions.push(`Ideas para ${task.title}`);
+      });
+      
+      // Get subject-specific suggestions
+      const activeSubjects = new Set([
+        ...upcomingExams.map(exam => exam.subject),
+        ...upcomingTasks.map(task => task.subject)
+      ]);
+      
+      activeSubjects.forEach(subject => {
+        suggestions.push(`Dudas de ${subject}`);
+        suggestions.push(`Recursos para ${subject}`);
+      });
+      
+      // Add generic suggestions
+      suggestions.push(
+        "Planificación semanal",
+        "Técnicas de estudio",
+        "Conceptos para repasar",
+        "Bibliografía consultada",
+        "Ideas de proyecto"
+      );
+      
+      // Shuffle and return unique suggestions
+      return [...new Set(suggestions)]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 8);
+    };
+
+    // Request notification permission
+    const requestNotificationPermission = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        return permission === 'granted';
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        return false;
+      }
+    };
+
+    // Schedule notification
+    const scheduleNotification = (title, body, tag = 'default', delay = 0) => {
+      if (!('Notification' in window)) return;
+      
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification(title, {
+              body,
+              tag,
+              icon: '/favicon.ico',
+              silent: false,
+              vibrate: [100, 50, 100],
+              requireInteraction: true
+            });
+          });
+        }
+      }, delay);
+    };
+    
+    // Schedule multiple notifications for a task
+    const scheduleTaskNotifications = async (task) => {
+      const hasPermission = await requestNotificationPermission();
+      if (!hasPermission) return;
+      
+      const dueDate = new Date(task.due_date);
+      const dayBefore = new Date(dueDate);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      
+      // Only schedule if due date is in the future
+      if (dayBefore > new Date()) {
+        // Schedule 30+ notifications throughout the day before
+        const notificationCount = 32; 
+        const startHour = 7; // 7 AM
+        const endHour = 22; // 10 PM
+        const intervalMinutes = Math.floor((endHour - startHour) * 60 / notificationCount);
+        
+        const today = new Date();
+        
+        // Create varied notification messages
+        const messages = [
+          `No olvides tu tarea de ${task.subject}: "${task.title}"`,
+          `¡Recuerda! Mañana debes entregar: "${task.title}"`,
+          `Tarea pendiente para mañana: ${task.title}`,
+          `${task.subject}: Entrega mañana "${task.title}"`,
+          `Recordatorio importante: "${task.title}" para mañana`,
+          `¡Último día para completar "${task.title}"!`
+        ];
+        
+        for (let i = 0; i < notificationCount; i++) {
+          const minutesFromStart = Math.floor(i * intervalMinutes);
+          const notificationTime = new Date(dayBefore);
+          notificationTime.setHours(startHour, minutesFromStart, 0, 0);
+          
+          const delay = notificationTime.getTime() - today.getTime();
+          if (delay > 0) {
+            const messageIndex = i % messages.length;
+            scheduleNotification(
+              `📚 ${task.subject} - Tarea para mañana`,
+              messages[messageIndex] + (task.description ? `\n${task.description}` : ''),
+              `task-reminder-${task.id}-${i}`,
+              delay
+            );
+          }
+        }
+      }
+    };
+    
+    // Get insights from data
+    const getInsights = (tasks, exams) => {
+      const insights = [];
+      
+      // Get completion rate
+      const completedTasks = tasks.filter(task => task.completed);
+      const completionRate = tasks.length > 0 
+        ? Math.round((completedTasks.length / tasks.length) * 100) 
+        : 0;
+      
+      if (completionRate >= 80) {
+        insights.push({
+          type: 'success',
+          title: 'Alta productividad',
+          message: `¡Felicidades! Has completado el ${completionRate}% de tus tareas.`,
+          icon: 'emoji_events'
+        });
+      } else if (completionRate < 50 && tasks.length > 5) {
+        insights.push({
+          type: 'warning',
+          title: 'Progreso lento',
+          message: `Has completado el ${completionRate}% de tus tareas. Considera organizar mejor tu tiempo.`,
+          icon: 'schedule'
+        });
+      }
+      
+      // Get grade insights
+      const tasksWithGrades = tasks.filter(task => task.completed && task.grade !== undefined);
+      const examsWithGrades = exams.filter(exam => exam.grade !== undefined);
+      
+      const allGradesItems = [...tasksWithGrades, ...examsWithGrades];
+      if (allGradesItems.length > 0) {
+        const avgGrade = allGradesItems.reduce((sum, item) => sum + item.grade, 0) / allGradesItems.length;
+        
+        if (avgGrade >= 8) {
+          insights.push({
+            type: 'success',
+            title: 'Excelente rendimiento',
+            message: `Tu nota media es ${avgGrade.toFixed(1)}/10. ¡Sigue así!`,
+            icon: 'trending_up'
+          });
+        } else if (avgGrade < 6) {
+          insights.push({
+            type: 'error',
+            title: 'Atención a las notas',
+            message: `Tu nota media es ${avgGrade.toFixed(1)}/10. Considera reforzar tus estudios.`,
+            icon: 'warning'
+          });
+        }
+      }
+      
+      // Analyze subjects
+      const subjectPerformance = {};
+      SUBJECTS.forEach(subject => {
+        const subjectItems = [
+          ...tasksWithGrades.filter(task => task.subject === subject),
+          ...examsWithGrades.filter(exam => exam.subject === subject)
+        ];
+        
+        if (subjectItems.length > 0) {
+          const avgSubjectGrade = subjectItems.reduce((sum, item) => sum + item.grade, 0) / subjectItems.length;
+          subjectPerformance[subject] = avgSubjectGrade;
+        }
+      });
+      
+      // Find best and worst subjects
+      const subjectEntries = Object.entries(subjectPerformance);
+      if (subjectEntries.length > 0) {
+        const bestSubject = subjectEntries.sort((a, b) => b[1] - a[1])[0];
+        const worstSubject = subjectEntries.sort((a, b) => a[1] - b[1])[0];
+        
+        if (bestSubject[1] >= 8) {
+          insights.push({
+            type: 'success',
+            title: 'Materia destacada',
+            message: `Tienes un rendimiento destacado en ${bestSubject[0]} con una media de ${bestSubject[1].toFixed(1)}/10.`,
+            icon: 'star'
+          });
+        }
+        
+        if (worstSubject[1] < 6 && subjectEntries.length > 1) {
+          insights.push({
+            type: 'warning',
+            title: 'Materia para mejorar',
+            message: `${worstSubject[0]} es tu materia con menor rendimiento. Considera dedicar más tiempo a su estudio.`,
+            icon: 'lightbulb'
+          });
+        }
+      }
+      
+      // Upcoming deadlines
+      const upcomingTasks = tasks
+        .filter(task => !task.completed && new Date(task.due_date) > new Date())
+        .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+      
+      const urgentTasks = upcomingTasks.filter(task => {
+        const dueDate = new Date(task.due_date);
+        const today = new Date();
+        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        return diffDays <= 2 && task.priority === 'high';
+      });
+      
+      if (urgentTasks.length > 0) {
+        insights.push({
+          type: 'warning',
+          title: 'Tareas urgentes',
+          message: `Tienes ${urgentTasks.length} ${urgentTasks.length === 1 ? 'tarea urgente' : 'tareas urgentes'} para los próximos 2 días.`,
+          icon: 'alarm'
+        });
+      }
+      
+      // Return most relevant insights
+      return insights.slice(0, 3);
+    };
+
+    // Components
+    function NotificationComponent({ message, type = 'info', onClose }) {
+      return (
+        <div className={`notification notification-${type}`}>
+          <div className="notification-content">
+            {message}
+          </div>
+        </div>
+      );
+    }
+
+    function NotificationArea({ notifications }) {
+      return (
+        <div className="notification-area">
+          {notifications.map((notification, index) => (
+            <NotificationComponent 
+              key={index}
+              message={notification.message}
+              type={notification.type}
+              onClose={() => {}} 
+            />
+          ))}
+        </div>
+      );
+    }
+
+    function CelebrationAnimation({ show, onAnimationEnd }) {
+      const particlesRef = useRef([]);
+      const containerRef = useRef(null);
+      
+      useEffect(() => {
+        if (show && containerRef.current) {
+          // Create particles for animation
+          const colors = ['#81c995', '#8ab4f8', '#fdd663', '#f28b82', '#ffffff'];
+          const particleCount = 30;
+          
+          particlesRef.current = [];
+          for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle';
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Random position
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 50 + Math.random() * 80;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+            
+            // Animation
+            particle.style.animation = `
+              fadeIn 0.3s ease ${Math.random() * 0.2}s forwards,
+              fadeOut 0.5s ease ${0.7 + Math.random() * 0.3}s forwards
+            `;
+            
+            // Physics
+            particle.style.transform = `translate(${x}px, ${y}px) scale(${0.5 + Math.random()})`;
+            
+            containerRef.current.appendChild(particle);
+            particlesRef.current.push(particle);
+          }
+          
+          const timer = setTimeout(() => {
+            onAnimationEnd();
+          }, 1500);
+          
+          return () => clearTimeout(timer);
+        }
+      }, [show, onAnimationEnd]);
+
+      if (!show) return null;
+
+      return (
+        <div className="celebration-animation">
+          <div className="celebration-container" ref={containerRef}>
+            <i className="material-icons-round celebration-icon">emoji_events</i>
+          </div>
+        </div>
+      );
+    }
+
+    function EmptyState({ icon, message, actionLabel, onAction }) {
+      return (
+        <div className="empty-state">
+          <i className="material-icons-round">{icon}</i>
+          <p>{message}</p>
+          {actionLabel && onAction && (
+            <button className="btn" onClick={onAction}>
+              {actionLabel}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    function TaskItem({ task, onComplete, onGrade }) {
+      const { id, title, description, due_date, subject, completed, grade, priority } = task;
+      
+      return (
+        <div className={`task-item ${completed ? 'completed' : ''} ${priority ? `priority-${priority}` : 'priority-low'}`}>
+          <div className="subject-badge">{subject}</div>
+          <h3>{title}</h3>
+          {description && <p>{description}</p>}
+          <div className="task-meta">
+            <span>Entrega: {formatDate(due_date)}</span>
+            {completed ? (
+              grade !== undefined ? (
+                <span className={`grade-badge ${getGradeClass(grade)}`}>
+                  Nota: {grade}/10
+                </span>
+              ) : (
+                <button className="btn" onClick={() => onGrade(id)}>
+                  Calificar
+                </button>
+              )
+            ) : (
+              <button className="btn" onClick={() => onComplete(id)}>
+                Completar
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function ExamItem({ exam, onGrade }) {
+      const { id, title, subject, exam_date, description, grade } = exam;
+      const today = new Date();
+      const examDate = new Date(exam_date);
+      const isToday = examDate.toDateString() === today.toDateString();
+      const isTomorrow = new Date(today.setDate(today.getDate() + 1)).toDateString() === examDate.toDateString();
+      
+      return (
+        <div className="exam-item">
+          <div className="subject-badge">{subject}</div>
+          <h3>{title}</h3>
+          {description && <p>{description}</p>}
+          <div className="exam-meta">
+            <span className={isToday ? 'today' : isTomorrow ? 'tomorrow' : ''}>
+              {isToday ? 'Hoy' : isTomorrow ? 'Mañana' : formatDate(exam_date)}
+            </span>
+            {grade !== undefined ? (
+              <span className={`grade-badge ${getGradeClass(grade)}`}>
+                Nota: {grade}/10
+              </span>
+            ) : (
+              <button className="btn" onClick={() => onGrade(id)}>
+                Calificar
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function NoteItem({ note, onEdit, onDelete }) {
+      const { id, content, created_at, reminder_date } = note;
+      
+      return (
+        <div className="note-item">
+          <h3>{content.length > 50 ? content.substring(0, 50) + '...' : content}</h3>
+          <div className="task-meta">
+            <span>{formatDate(created_at)}</span>
+            {reminder_date && (
+              <span>Recordatorio: {formatDate(reminder_date)}</span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function SubjectFilter({ subjects, activeSubject, onSubjectChange }) {
+      return (
+        <div className="subject-filter">
+          <div 
+            className={`subject-chip ${activeSubject === null ? 'active' : ''}`}
+            onClick={() => onSubjectChange(null)}
+          >
+            Todas
+          </div>
+          {subjects.map(subject => (
+            <div 
+              key={subject} 
+              className={`subject-chip ${activeSubject === subject ? 'active' : ''}`}
+              onClick={() => onSubjectChange(subject)}
+            >
+              {subject}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function PrioritySelector({ value, onChange }) {
+      return (
+        <div className="form-group">
+          <label>Prioridad</label>
+          <div className="priority-selector">
+            {PRIORITIES.map(priority => (
+              <div
+                key={priority.value}
+                className={`priority-option ${priority.value} ${value === priority.value ? 'selected' : ''}`}
+                onClick={() => onChange(priority.value)}
+              >
+                {priority.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function AddTaskModal({ show, onClose, onSave }) {
+      const [title, setTitle] = useState('');
+      const [description, setDescription] = useState('');
+      const [dueDate, setDueDate] = useState('');
+      const [subject, setSubject] = useState('');
+      const [priority, setPriority] = useState('medium');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave({
+          title,
+          description,
+          due_date: dueDate,
+          subject,
+          priority,
+          completed: false
+        });
+        
+        // Reset form
+        setTitle('');
+        setDescription('');
+        setDueDate('');
+        setSubject('');
+        setPriority('medium');
+      };
+      
+      if (!show) return null;
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Nueva Tarea</h2>
+              <button className="modal-close" onClick={onClose}>
+                <i className="material-icons-round">close</i>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="title">Título</label>
+                <input
+                  type="text"
+                  id="title"
+                  className="form-control"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="Nombre de la tarea"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Descripción (opcional)</label>
+                <textarea
+                  id="description"
+                  className="form-control"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Detalles de la tarea"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div className="form-group">
+                <label htmlFor="subject">Materia</label>
+                <select
+                  id="subject"
+                  className="form-control"
+                  value={subject}
+                  onChange={e => setSubject(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Selecciona una materia</option>
+                  {SUBJECTS.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
+              <PrioritySelector 
+                value={priority} 
+                onChange={setPriority}
+              />
+              <div className="form-group">
+                <label htmlFor="dueDate">Fecha de entrega</label>
+                <input
+                  type="datetime-local"
+                  id="dueDate"
+                  className="form-control"
+                  value={dueDate}
+                  onChange={e => setDueDate(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn" style={{ width: '100%' }}>
+                Guardar
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function AddExamModal({ show, onClose, onSave }) {
+      const [title, setTitle] = useState('');
+      const [description, setDescription] = useState('');
+      const [examDate, setExamDate] = useState('');
+      const [subject, setSubject] = useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave({
+          title,
+          description,
+          exam_date: examDate,
+          subject
+        });
+        
+        // Reset form
+        setTitle('');
+        setDescription('');
+        setExamDate('');
+        setSubject('');
+      };
+      
+      if (!show) return null;
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Nueva Lección/Examen</h2>
+              <button className="modal-close" onClick={onClose}>
+                <i className="material-icons-round">close</i>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="examTitle">Título</label>
+                <input
+                  type="text"
+                  id="examTitle"
+                  className="form-control"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="Nombre del examen/lección"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="examDescription">Temas (opcional)</label>
+                <textarea
+                  id="examDescription"
+                  className="form-control"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Temas a estudiar"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div className="form-group">
+                <label htmlFor="examSubject">Materia</label>
+                <select
+                  id="examSubject"
+                  className="form-control"
+                  value={subject}
+                  onChange={e => setSubject(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>Selecciona una materia</option>
+                  {SUBJECTS.map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="examDate">Fecha del examen</label>
+                <input
+                  type="datetime-local"
+                  id="examDate"
+                  className="form-control"
+                  value={examDate}
+                  onChange={e => setExamDate(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn" style={{ width: '100%' }}>
+                Guardar
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function AddNoteModal({ show, onClose, onSave, suggestions = [] }) {
+      const [content, setContent] = useState('');
+      const [hasReminder, setHasReminder] = useState(false);
+      const [reminderDate, setReminderDate] = useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave({
+          content,
+          reminder_date: hasReminder ? reminderDate : null
+        });
+        
+        // Reset form
+        setContent('');
+        setHasReminder(false);
+        setReminderDate('');
+      };
+      
+      const handleSuggestionClick = (suggestion) => {
+        setContent(content ? `${content}\n\n${suggestion}:` : `${suggestion}:`);
+      };
+      
+      if (!show) return null;
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Nueva Nota</h2>
+              <button className="modal-close" onClick={onClose}>
+                <i className="material-icons-round">close</i>
+              </button>
+            </div>
+            
+            {suggestions.length > 0 && (
+              <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                <div style={{ fontSize: '14px', marginBottom: 'var(--spacing-xs)', color: 'var(--text-secondary)' }}>
+                  Sugerencias:
+                </div>
+                <div>
+                  {suggestions.map((suggestion, index) => (
+                    <span 
+                      key={index} 
+                      className="suggestion-pill"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="noteContent">Contenido</label>
+                <textarea
+                  id="noteContent"
+                  className="form-control"
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  placeholder="Escribe tu nota aquí"
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
+              <div className="form-group">
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 'var(--spacing-sm)' }}>
+                  <input
+                    type="checkbox"
+                    id="hasReminder"
+                    checked={hasReminder}
+                    onChange={e => setHasReminder(e.target.checked)}
+                    style={{ marginRight: 'var(--spacing-sm)' }}
+                  />
+                  <label htmlFor="hasReminder">Establecer recordatorio</label>
+                </div>
+                {hasReminder && (
+                  <input
+                    type="date"
+                    id="reminderDate"
+                    className="form-control"
+                    value={reminderDate}
+                    onChange={e => setReminderDate(e.target.value)}
+                    required={hasReminder}
+                  />
+                )}
+              </div>
+              <button type="submit" className="btn" style={{ width: '100%' }}>
+                Guardar
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function GradeModal({ show, onClose, onSave, itemType }) {
+      const [grade, setGrade] = useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const numGrade = parseFloat(grade);
+        if (numGrade >= 0 && numGrade <= 10) {
+          onSave(numGrade);
+          setGrade('');
+        }
+      };
+      
+      if (!show) return null;
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Agregar Calificación</h2>
+              <button className="modal-close" onClick={onClose}>
+                <i className="material-icons-round">close</i>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="grade">Calificación (0-10)</label>
+                <input
+                  type="number"
+                  id="grade"
+                  className="form-control"
+                  value={grade}
+                  onChange={e => setGrade(e.target.value)}
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  placeholder="Ej: 8.5"
+                  required
+                />
+              </div>
+              <button type="submit" className="btn" style={{ width: '100%' }}>
+                Guardar
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+    
+    function InsightCard({ insight }) {
+      return (
+        <div className="insights-card" style={{ borderColor: 
+          insight.type === 'success' ? 'var(--success)' : 
+          insight.type === 'warning' ? 'var(--warning)' : 
+          insight.type === 'error' ? 'var(--error)' : 'var(--accent-primary)' 
+        }}>
+          <h3>
+            <i className="material-icons-round" style={{ color: 
+              insight.type === 'success' ? 'var(--success)' : 
+              insight.type === 'warning' ? 'var(--warning)' : 
+              insight.type === 'error' ? 'var(--error)' : 'var(--accent-primary)' 
+            }}>{insight.icon}</i>
+            {insight.title}
+          </h3>
+          <p>{insight.message}</p>
+        </div>
+      );
+    }
+    
+    function GradeChart({ data, type = 'line' }) {
+      const chartRef = useRef(null);
+      const chartInstance = useRef(null);
+      
+      useEffect(() => {
+        if (!chartRef.current) return;
+        
+        // Destroy previous chart
+        if (chartInstance.current) {
+          chartInstance.current.destroy();
+        }
+        
+        // Create new chart
+        const ctx = chartRef.current.getContext('2d');
+        chartInstance.current = new Chart(ctx, {
+          type,
+          data: {
+            labels: data.labels,
+            datasets: [{
+              label: data.label || 'Datos',
+              data: data.values,
+              backgroundColor: 'rgba(138, 180, 248, 0.2)',
+              borderColor: 'var(--accent-primary)',
+              borderWidth: 2,
+              tension: 0.3,
+              pointBackgroundColor: 'var(--accent-primary)',
+              pointRadius: 4,
+              pointHoverRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: type === 'bar',
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                  color: 'var(--text-secondary)',
+                  font: {
+                    family: 'Inter',
+                    size: 12
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: 'var(--text-secondary)',
+                  font: {
+                    family: 'Inter',
+                    size: 12
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'var(--bg-secondary)',
+                titleColor: 'var(--text-primary)',
+                bodyColor: 'var(--text-secondary)',
+                titleFont: {
+                  family: 'Inter',
+                  size: 14
+                },
+                bodyFont: {
+                  family: 'Inter',
+                  size: 13
+                },
+                borderColor: 'var(--accent-primary)',
+                borderWidth: 1
+              }
+            }
+          }
+        });
+        
+        return () => {
+          if (chartInstance.current) {
+            chartInstance.current.destroy();
+          }
+        };
+      }, [data, type]);
+      
+      return (
+        <div className="chart-container">
+          <canvas ref={chartRef}></canvas>
+        </div>
+      );
+    }
+    
+    function CalendarView({ tasks, exams, onDayClick }) {
+      const [currentDate, setCurrentDate] = useState(new Date());
+      const [selectedDay, setSelectedDay] = useState(null);
+      
+      const monthYear = useMemo(() => {
+        const options = { month: 'long', year: 'numeric' };
+        return currentDate.toLocaleDateString('es-ES', options);
+      }, [currentDate]);
+      
+      const daysInMonth = useMemo(() => {
+        return getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
+      }, [currentDate]);
+      
+      const firstDay = useMemo(() => {
+        return getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
+      }, [currentDate]);
+      
+      const prevMonth = () => {
+        const date = new Date(currentDate);
+        date.setMonth(date.getMonth() - 1);
+        setCurrentDate(date);
+        setSelectedDay(null);
+      };
+      
+      const nextMonth = () => {
+        const date = new Date(currentDate);
+        date.setMonth(date.getMonth() + 1);
+        setCurrentDate(date);
+        setSelectedDay(null);
+      };
+      
+      const handleDayClick = (day) => {
+        if (day === 0) return; // Empty cell
+        
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        setSelectedDay(day);
+        onDayClick(date);
+      };
+      
+      // Map tasks and exams to days
+      const itemsByDay = useMemo(() => {
+        const result = {};
+        
+        // Group tasks by day
+        tasks.forEach(task => {
+          const date = new Date(task.due_date);
+          if (date.getMonth() === currentDate.getMonth() && 
+              date.getFullYear() === currentDate.getFullYear()) {
+            const day = date.getDate();
+            if (!result[day]) result[day] = { tasks: [], exams: [] };
+            result[day].tasks.push(task);
+          }
+        });
+        
+        // Group exams by day
+        exams.forEach(exam => {
+          const date = new Date(exam.exam_date);
+          if (date.getMonth() === currentDate.getMonth() && 
+              date.getFullYear() === currentDate.getFullYear()) {
+            const day = date.getDate();
+            if (!result[day]) result[day] = { tasks: [], exams: [] };
+            result[day].exams.push(exam);
+          }
+        });
+        
+        return result;
+      }, [tasks, exams, currentDate]);
+      
+      // Create day cells with placeholders for empty first week days
+      const days = useMemo(() => {
+        const result = [];
+        
+        // Add empty cells for days before the 1st of the month
+        for (let i = 0; i < firstDay; i++) {
+          result.push(0);
+        }
+        
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          result.push(day);
+        }
+        
+        return result;
+      }, [daysInMonth, firstDay]);
+      
+      const today = new Date();
+      const isToday = (day) => {
+        return day === today.getDate() && 
+               currentDate.getMonth() === today.getMonth() && 
+               currentDate.getFullYear() === today.getFullYear();
+      };
+      
+      return (
+        <div>
+          <div className="calendar-header">
+            <h3>{monthYear}</h3>
+            <div className="nav-buttons">
+              <button className="nav-button" onClick={prevMonth}>
+                <i className="material-icons-round" style={{fontSize: '18px'}}>chevron_left</i>
+              </button>
+              <button className="nav-button" onClick={nextMonth}>
+                <i className="material-icons-round" style={{fontSize: '18px'}}>chevron_right</i>
+              </button>
+            </div>
+          </div>
+          
+          <div className="calendar-grid">
+            {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, index) => (
+              <div key={`header-${index}`} className="calendar-day-header">{day}</div>
+            ))}
+            
+            {days.map((day, index) => (
+              <div 
+                key={`day-${index}`} 
+                className={`calendar-day ${day === 0 ? 'empty' : ''} ${isToday(day) ? 'today' : ''} ${day === selectedDay ? 'active' : ''} ${itemsByDay[day] ? 'has-items' : ''}`}
+                onClick={() => day > 0 && handleDayClick(day)}
+              >
+                {day > 0 && (
+                  <span className="day-number">{day}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    function SettingsModal({ show, onClose, settings, onSettingsChange }) {
+      if (!show) return null;
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Configuración</h2>
+              <button className="modal-close" onClick={onClose}>
+                <i className="material-icons-round">close</i>
+              </button>
+            </div>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Notificaciones</div>
+                <div className="settings-option-description">Recibir recordatorios de tareas y exámenes</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.notifications}
+                  onChange={e => onSettingsChange({...settings, notifications: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Modo oscuro</div>
+                <div className="settings-option-description">Usar tema oscuro en la aplicación</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.darkMode}
+                  onChange={e => onSettingsChange({...settings, darkMode: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Sugerencias automáticas</div>
+                <div className="settings-option-description">Mostrar sugerencias basadas en actividades</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.suggestions}
+                  onChange={e => onSettingsChange({...settings, suggestions: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div style={{ padding: 'var(--spacing-md)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
+              Versión 1.2.0
+              <br />
+              <div style={{ marginTop: 'var(--spacing-md)', fontStyle: 'italic' }}>
+                Desarrollado con ❤️ por TheMart
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function TasksPage() {
+      const tasks = useSyncExternalStore(
+        room.collection('task').subscribe,
+        room.collection('task').getList
+      );
+      
+      const [activeSubject, setActiveSubject] = useState(null);
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [showGradeModal, setShowGradeModal] = useState(false);
+      const [selectedTaskId, setSelectedTaskId] = useState(null);
+      const [activeTab, setActiveTab] = useState('pending');
+      const [showCelebration, setShowCelebration] = useState(false);
+      
+      // Filter tasks by subject if needed
+      const filteredTasks = useMemo(() => 
+        activeSubject ? tasks.filter(task => task.subject === activeSubject) : tasks,
+        [tasks, activeSubject]
+      );
+      
+      const pendingTasks = useMemo(() => 
+        filteredTasks.filter(task => !task.completed)
+          .sort((a, b) => {
+            // First by priority (high > medium > low)
+            const priorityOrder = { high: 0, medium: 1, low: 2, undefined: 3 };
+            const priorityA = priorityOrder[a.priority] || 3;
+            const priorityB = priorityOrder[b.priority] || 3;
+            if (priorityA !== priorityB) return priorityA - priorityB;
+            
+            // Then by due date
+            return new Date(a.due_date) - new Date(b.due_date);
+          }),
+        [filteredTasks]
+      );
+      
+      const completedTasks = useMemo(() => 
+        filteredTasks.filter(task => task.completed)
+          .sort((a, b) => new Date(b.completed_at || b.created_at) - new Date(a.completed_at || a.created_at)),
+        [filteredTasks]
+      );
+      
+      // Get unique subjects from all tasks for the filter
+      const availableSubjects = useMemo(() => {
+        const subjects = new Set();
+        tasks.forEach(task => subjects.add(task.subject));
+        return Array.from(subjects);
+      }, [tasks]);
+      
+      const handleAddTask = async (taskData) => {
+        try {
+          const newTask = await room.collection('task').create(taskData);
+          setShowAddModal(false);
+          
+          // Schedule notifications for the new task
+          scheduleTaskNotifications(newTask);
+        } catch (error) {
+          console.error('Error adding task:', error);
+        }
+      };
+      
+      const handleCompleteTask = async (taskId) => {
+        try {
+          const task = tasks.find(t => t.id === taskId);
+          if (task) {
+            await room.collection('task').update(taskId, {
+              completed: true,
+              completed_at: new Date().toISOString()
+            });
+            setShowCelebration(true);
+          }
+        } catch (error) {
+          console.error('Error completing task:', error);
+        }
+      };
+      
+      const handleGradeTask = (taskId) => {
+        setSelectedTaskId(taskId);
+        setShowGradeModal(true);
+      };
+      
+      const handleSaveGrade = async (grade) => {
+        try {
+          if (selectedTaskId) {
+            await room.collection('task').update(selectedTaskId, { grade });
+            setShowGradeModal(false);
+            setSelectedTaskId(null);
+            setShowCelebration(true);
+          }
+        } catch (error) {
+          console.error('Error saving grade:', error);
+        }
+      };
+      
+      return (
+        <div className="page-transition">
+          <SubjectFilter 
+            subjects={availableSubjects}
+            activeSubject={activeSubject}
+            onSubjectChange={setActiveSubject}
+          />
+          
+          <div className="tabs">
+            <button 
+              className={`tab ${activeTab === 'pending' ? 'active' : ''}`}
+              onClick={() => setActiveTab('pending')}
+            >
+              Pendientes {pendingTasks.length > 0 && <span className="count">({pendingTasks.length})</span>}
+            </button>
+            <button 
+              className={`tab ${activeTab === 'completed' ? 'active' : ''}`}
+              onClick={() => setActiveTab('completed')}
+            >
+              Completadas
+            </button>
+          </div>
+          
+          <div className="container">
+            {activeTab === 'pending' && (
+              <>
+                {pendingTasks.length === 0 ? (
+                  <EmptyState 
+                    icon="assignment"
+                    message="No tienes tareas pendientes"
+                    actionLabel="Agregar tarea"
+                    onAction={() => setShowAddModal(true)}
+                  />
+                ) : (
+                  pendingTasks.map(task => (
+                    <TaskItem 
+                      key={task.id}
+                      task={task}
+                      onComplete={handleCompleteTask}
+                      onGrade={handleGradeTask}
+                    />
+                  ))
+                )}
+              </>
+            )}
+            
+            {activeTab === 'completed' && (
+              <>
+                {completedTasks.length === 0 ? (
+                  <EmptyState 
+                    icon="check_circle"
+                    message="No tienes tareas completadas"
+                  />
+                ) : (
+                  completedTasks.map(task => (
+                    <TaskItem 
+                      key={task.id}
+                      task={task}
+                      onComplete={handleCompleteTask}
+                      onGrade={handleGradeTask}
+                    />
+                  ))
+                )}
+              </>
+            )}
+          </div>
+          
+          <button className="btn btn-fab" onClick={() => setShowAddModal(true)}>
+            <i className="material-icons-round">add</i>
+          </button>
+          
+          <AddTaskModal 
+            show={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleAddTask}
+          />
+          
+          <GradeModal 
+            show={showGradeModal}
+            onClose={() => {
+              setShowGradeModal(false);
+              setSelectedTaskId(null);
+            }}
+            onSave={handleSaveGrade}
+            itemType="task"
+          />
+          
+          <CelebrationAnimation 
+            show={showCelebration}
+            onAnimationEnd={() => setShowCelebration(false)}
+          />
+        </div>
+      );
+    }
+
+    function ExamsPage() {
+      const exams = useSyncExternalStore(
+        room.collection('exam').subscribe,
+        room.collection('exam').getList
+      );
+      
+      const [activeSubject, setActiveSubject] = useState(null);
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [showGradeModal, setShowGradeModal] = useState(false);
+      const [selectedExamId, setSelectedExamId] = useState(null);
+      const [activeTab, setActiveTab] = useState('upcoming');
+      const [showCelebration, setShowCelebration] = useState(false);
+      
+      // Filter exams by subject if needed
+      const filteredExams = useMemo(() => 
+        activeSubject ? exams.filter(exam => exam.subject === activeSubject) : exams,
+        [exams, activeSubject]
+      );
+      
+      const upcomingExams = useMemo(() => 
+        filteredExams.filter(exam => !exam.grade && new Date(exam.exam_date) >= new Date())
+          .sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date)),
+        [filteredExams]
+      );
+      
+      const pastExams = useMemo(() => 
+        filteredExams.filter(exam => exam.grade || new Date(exam.exam_date) < new Date())
+          .sort((a, b) => new Date(b.exam_date) - new Date(a.exam_date)),
+        [filteredExams]
+      );
+      
+      // Get unique subjects from all exams for the filter
+      const availableSubjects = useMemo(() => {
+        const subjects = new Set();
+        exams.forEach(exam => subjects.add(exam.subject));
+        return Array.from(subjects);
+      }, [exams]);
+      
+      // Check for exams tomorrow and schedule notifications
+      useEffect(() => {
+        const checkUpcomingExams = async () => {
+          const hasPermission = await requestNotificationPermission();
+          if (!hasPermission) return;
+          
+          const today = new Date();
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          
+          const tomorrowExams = exams.filter(exam => {
+            const examDate = new Date(exam.exam_date);
+            return examDate.toDateString() === tomorrow.toDateString();
+          });
+          
+          if (tomorrowExams.length > 0) {
+            // Schedule 32 notifications throughout the day
+            const notificationCount = Math.min(32, tomorrowExams.length * 4);
+            const startHour = 7; // 7 AM
+            const endHour = 22; // 10 PM
+            const intervalMinutes = (endHour - startHour) * 60 / notificationCount;
+            
+            for (let i = 0; i < notificationCount; i++) {
+              const examIndex = i % tomorrowExams.length;
+              const exam = tomorrowExams[examIndex];
+              
+              const minutesFromStart = Math.floor(i * intervalMinutes);
+              const notificationTime = new Date(today);
+              notificationTime.setHours(startHour, minutesFromStart, 0, 0);
+              
+              const delay = notificationTime.getTime() - today.getTime();
+              if (delay > 0) {
+                scheduleNotification(
+                  `📚 Lección de ${exam.subject} mañana`,
+                  `Recuerda estudiar para "${exam.title}". ${exam.description ? `Temas: ${exam.description}` : ''}`,
+                  `exam-reminder-${exam.id}-${i}`,
+                  delay
+                );
+              }
+            }
+          }
+        };
+        
+        checkUpcomingExams();
+        
+        // Check every hour
+        const interval = setInterval(checkUpcomingExams, 3600000);
+        return () => clearInterval(interval);
+      }, [exams]);
+      
+      const handleAddExam = async (examData) => {
+        try {
+          await room.collection('exam').create(examData);
+          setShowAddModal(false);
+        } catch (error) {
+          console.error('Error adding exam:', error);
+        }
+      };
+      
+      const handleGradeExam = (examId) => {
+        setSelectedExamId(examId);
+        setShowGradeModal(true);
+      };
+      
+      const handleSaveGrade = async (grade) => {
+        try {
+          if (selectedExamId) {
+            await room.collection('exam').update(selectedExamId, { grade });
+            setShowGradeModal(false);
+            setSelectedExamId(null);
+            setShowCelebration(true);
+          }
+        } catch (error) {
+          console.error('Error saving exam grade:', error);
+        }
+      };
+      
+      return (
+        <div className="page-transition">
+          <SubjectFilter 
+            subjects={availableSubjects}
+            activeSubject={activeSubject}
+            onSubjectChange={setActiveSubject}
+          />
+          
+          <div className="tabs">
+            <button 
+              className={`tab ${activeTab === 'upcoming' ? 'active' : ''}`}
+              onClick={() => setActiveTab('upcoming')}
+            >
+              Próximos {upcomingExams.length > 0 && <span className="count">({upcomingExams.length})</span>}
+            </button>
+            <button 
+              className={`tab ${activeTab === 'past' ? 'active' : ''}`}
+              onClick={() => setActiveTab('past')}
+            >
+              Pasados
+            </button>
+          </div>
+          
+          <div className="container">
+            {activeTab === 'upcoming' && (
+              <>
+                {upcomingExams.length === 0 ? (
+                  <EmptyState 
+                    icon="event"
+                    message="No tienes exámenes próximos"
+                    actionLabel="Agregar examen"
+                    onAction={() => setShowAddModal(true)}
+                  />
+                ) : (
+                  upcomingExams.map(exam => (
+                    <ExamItem 
+                      key={exam.id}
+                      exam={exam}
+                      onGrade={handleGradeExam}
+                    />
+                  ))
+                )}
+              </>
+            )}
+            
+            {activeTab === 'past' && (
+              <>
+                {pastExams.length === 0 ? (
+                  <EmptyState 
+                    icon="history"
+                    message="No tienes exámenes pasados"
+                  />
+                ) : (
+                  pastExams.map(exam => (
+                    <ExamItem 
+                      key={exam.id}
+                      exam={exam}
+                      onGrade={handleGradeExam}
+                    />
+                  ))
+                )}
+              </>
+            )}
+          </div>
+          
+          <button className="btn btn-fab" onClick={() => setShowAddModal(true)}>
+            <i className="material-icons-round">add</i>
+          </button>
+          
+          <AddExamModal 
+            show={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleAddExam}
+          />
+          
+          <GradeModal 
+            show={showGradeModal}
+            onClose={() => {
+              setShowGradeModal(false);
+              setSelectedExamId(null);
+            }}
+            onSave={handleSaveGrade}
+            itemType="exam"
+          />
+          
+          <CelebrationAnimation 
+            show={showCelebration}
+            onAnimationEnd={() => setShowCelebration(false)}
+          />
+        </div>
+      );
+    }
+
+    function NotesPage() {
+      const notes = useSyncExternalStore(
+        room.collection('note').subscribe,
+        room.collection('note').getList
+      );
+      
+      const tasks = useSyncExternalStore(
+        room.collection('task').subscribe,
+        room.collection('task').getList
+      );
+      
+      const exams = useSyncExternalStore(
+        room.collection('exam').subscribe,
+        room.collection('exam').getList
+      );
+      
+      const sortedNotes = useMemo(() => 
+        [...notes].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+        [notes]
+      );
+      
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [activeTab, setActiveTab] = useState('all');
+      
+      // Generate content suggestions
+      const suggestions = useMemo(() => 
+        generateSuggestions(tasks, exams),
+        [tasks, exams]
+      );
+      
+      // Filter notes by reminder
+      const notesWithReminders = useMemo(() => 
+        sortedNotes.filter(note => note.reminder_date),
+        [sortedNotes]
+      );
+      
+      const handleAddNote = async (noteData) => {
+        try {
+          await room.collection('note').create(noteData);
+          setShowAddModal(false);
+          
+          // Schedule reminder if applicable
+          if (noteData.reminder_date) {
+            const reminderTime = new Date(noteData.reminder_date).getTime();
+            const now = new Date().getTime();
+            const delay = reminderTime - now;
+            
+            if (delay > 0) {
+              const hasPermission = await requestNotificationPermission();
+              if (hasPermission) {
+                // Multiple notifications throughout the day
+                const notificationCount = 10;
+                const startHour = 8; // 8 AM
+                const endHour = 20; // 8 PM
+                const intervalMinutes = (endHour - startHour) * 60 / notificationCount;
+                
+                for (let i = 0; i < notificationCount; i++) {
+                  const reminderDate = new Date(noteData.reminder_date);
+                  reminderDate.setHours(startHour + Math.floor(i * intervalMinutes / 60), 
+                                        (i * intervalMinutes) % 60, 0, 0);
+                  
+                  const noteDelay = reminderDate.getTime() - now;
+                  if (noteDelay > 0) {
+                    scheduleNotification(
+                      '📝 Recordatorio de nota',
+                      noteData.content.substring(0, 100) + (noteData.content.length > 100 ? '...' : ''),
+                      `note-reminder-${Date.now()}-${i}`,
+                      noteDelay
+                    );
+                  }
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error adding note:', error);
+        }
+      };
+      
+      const displayedNotes = activeTab === 'all' ? sortedNotes : notesWithReminders;
+      
+      return (
+        <div className="page-transition">
+          <div className="tabs">
+            <button 
+              className={`tab ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              Todas
+            </button>
+            <button 
+              className={`tab ${activeTab === 'reminders' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reminders')}
+            >
+              Con recordatorio
+            </button>
+          </div>
+          
+          <div className="container">
+            {displayedNotes.length === 0 ? (
+              <EmptyState 
+                icon="note"
+                message={activeTab === 'all' 
+                  ? "No tienes notas guardadas" 
+                  : "No tienes notas con recordatorio"}
+                actionLabel="Agregar nota"
+                onAction={() => setShowAddModal(true)}
+              />
+            ) : (
+              displayedNotes.map(note => (
+                <NoteItem 
+                  key={note.id}
+                  note={note}
+                />
+              ))
+            )}
+          </div>
+          
+          <button className="btn btn-fab" onClick={() => setShowAddModal(true)}>
+            <i className="material-icons-round">add</i>
+          </button>
+          
+          <AddNoteModal 
+            show={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleAddNote}
+            suggestions={suggestions}
+          />
+        </div>
+      );
+    }
+
+    function StatsPage() {
+      const tasks = useSyncExternalStore(
+        room.collection('task').subscribe,
+        room.collection('task').getList
+      );
+      
+      const exams = useSyncExternalStore(
+        room.collection('exam').subscribe,
+        room.collection('exam').getList
+      );
+      
+      const [activeTab, setActiveTab] = useState('overview');
+      const [selectedDate, setSelectedDate] = useState(null);
+      const [itemsForDate, setItemsForDate] = useState([]);
+      
+      const completedTasks = useMemo(() => 
+        tasks.filter(task => task.completed),
+        [tasks]
+      );
+      
+      const tasksWithGrades = useMemo(() => 
+        tasks.filter(task => task.grade !== undefined),
+        [tasks]
+      );
+      
+      const examsWithGrades = useMemo(() => 
+        exams.filter(exam => exam.grade !== undefined),
+        [exams]
+      );
+      
+      // Calculate insights
+      const insights = useMemo(() => 
+        getInsights(tasks, exams),
+        [tasks, exams]
+      );
+      
+      // Prepare data for charts
+      const gradesBySubject = useMemo(() => {
+        const subjectData = {};
+        
+        // Calculate average grade by subject
+        SUBJECTS.forEach(subject => {
+          const subjectTasks = tasksWithGrades.filter(task => task.subject === subject);
+          const subjectExams = examsWithGrades.filter(exam => exam.subject === subject);
+          
+          const items = [...subjectTasks, ...subjectExams];
+          if (items.length > 0) {
+            const avgGrade = items.reduce((sum, item) => sum + item.grade, 0) / items.length;
+            subjectData[subject] = avgGrade;
+          }
+        });
+        
+        // Sort subjects by grade
+        const sortedEntries = Object.entries(subjectData)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6); // Top 6 subjects
+        
+        return {
+          labels: sortedEntries.map(([subject]) => subject),
+          values: sortedEntries.map(([, grade]) => grade),
+          label: 'Promedio por materia'
+        };
+      }, [tasksWithGrades, examsWithGrades]);
+      
+      // Grade progression over time
+      const gradesOverTime = useMemo(() => {
+        // Combine and sort all graded items by date
+        const allGradedItems = [
+          ...tasksWithGrades.map(task => ({ 
+            date: task.completed_at || task.created_at, 
+            grade: task.grade,
+            subject: task.subject
+          })),
+          ...examsWithGrades.map(exam => ({ 
+            date: exam.exam_date, 
+            grade: exam.grade,
+            subject: exam.subject
+          }))
+        ].sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        if (allGradedItems.length < 2) {
+          return {
+            labels: [],
+            values: [],
+            label: 'Progreso de notas'
+          };
+        }
+        
+        // Last 10 graded items
+        const recentItems = allGradedItems.slice(-10);
+        
+        return {
+          labels: recentItems.map(item => formatDateShort(item.date)),
+          values: recentItems.map(item => item.grade),
+          label: 'Progreso de notas'
+        };
+      }, [tasksWithGrades, examsWithGrades]);
+      
+      // Task completion data
+      const completionStats = useMemo(() => {
+        const pendingCount = tasks.length - completedTasks.length;
+        const completionRate = tasks.length > 0 ? Math.floor((completedTasks.length / tasks.length) * 100) : 0;
+        
+        return {
+          total: tasks.length,
+          completed: completedTasks.length,
+          pending: pendingCount,
+          completionRate
+        };
+      }, [tasks, completedTasks]);
+      
+      const handleDaySelected = (date) => {
+        setSelectedDate(date);
+        
+        // Find tasks and exams for this date
+        const items = [];
+        
+        // Tasks due on this date
+        tasks.forEach(task => {
+          const taskDate = new Date(task.due_date);
+          if (taskDate.toDateString() === date.toDateString()) {
+            items.push({
+              type: 'task',
+              data: task
+            });
+          }
+        });
+        
+        // Exams on this date
+        exams.forEach(exam => {
+          const examDate = new Date(exam.exam_date);
+          if (examDate.toDateString() === date.toDateString()) {
+            items.push({
+              type: 'exam',
+              data: exam
+            });
+          }
+        });
+        
+        setItemsForDate(items);
+      };
+      
+      return (
+        <div className="page-transition">
+          <div className="tabs">
+            <button 
+              className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              Resumen
+            </button>
+            <button 
+              className={`tab ${activeTab === 'calendar' ? 'active' : ''}`}
+              onClick={() => setActiveTab('calendar')}
+            >
+              Calendario
+            </button>
+            <button 
+              className={`tab ${activeTab === 'subjects' ? 'active' : ''}`}
+              onClick={() => setActiveTab('subjects')}
+            >
+              Materias
+            </button>
+          </div>
+          
+          <div className="container">
+            {activeTab === 'overview' && (
+              <>
+                {insights.map((insight, index) => (
+                  <InsightCard key={index} insight={insight} />
+                ))}
+                
+                <div className="card" style={{ marginBottom: 'var(--spacing-lg)' }}>
+                  <h3 style={{marginBottom: 'var(--spacing-sm)'}}>Resumen de Tareas</h3>
+                  <div style={{ marginTop: 'var(--spacing-xs)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--spacing-xs)' }}>
+                      <span>Progreso:</span>
+                      <span>{completionStats.completionRate}%</span>
+                    </div>
+                    <div style={{ 
+                      height: '6px', 
+                      background: 'var(--bg-tertiary)', 
+                      borderRadius: '3px', 
+                      overflow: 'hidden',
+                      marginBottom: 'var(--spacing-md)'
+                    }}>
+                      <div style={{ 
+                        width: `${completionStats.completionRate}%`, 
+                        height: '100%', 
+                        background: 'var(--accent-primary)',
+                        transition: 'width 1s ease'
+                      }}></div>
+                    </div>
+                    <div style={{fontSize: '14px', color: 'var(--text-secondary)'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Total de tareas:</span>
+                        <span>{tasks.length}</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Completadas:</span>
+                        <span>{completedTasks.length}</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Exámenes:</span>
+                        <span>{exams.length}</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                        <span>Calificadas:</span>
+                        <span>{tasksWithGrades.length + examsWithGrades.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {gradesOverTime.labels.length > 0 && (
+                  <div className="card">
+                    <h3 style={{marginBottom: 'var(--spacing-sm)'}}>Evolución de notas</h3>
+                    <GradeChart data={gradesOverTime} type="line" />
+                  </div>
+                )}
+              </>
+            )}
+            
+            {activeTab === 'calendar' && (
+              <>
+                <div className="card">
+                  <CalendarView 
+                    tasks={tasks} 
+                    exams={exams}
+                    onDayClick={handleDaySelected}
+                  />
+                </div>
+                
+                {selectedDate && (
+                  <div style={{marginTop: 'var(--spacing-md)'}}>
+                    <h3 style={{marginBottom: 'var(--spacing-sm)'}}>
+                      Actividades para {formatDate(selectedDate)}
+                    </h3>
+                    
+                    {itemsForDate.length === 0 ? (
+                      <div style={{padding: 'var(--spacing-md)', textAlign: 'center', color: 'var(--text-secondary)'}}>
+                        No hay actividades para esta fecha
+                      </div>
+                    ) : (
+                      itemsForDate.map((item, index) => (
+                        <div key={index}>
+                          {item.type === 'task' ? (
+                            <TaskItem 
+                              task={item.data} 
+                              onComplete={() => {}} 
+                              onGrade={() => {}}
+                            />
+                          ) : (
+                            <ExamItem 
+                              exam={item.data} 
+                              onGrade={() => {}}
+                            />
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+            
+            {activeTab === 'subjects' && (
+              <>
+                <div className="card">
+                  <h3 style={{marginBottom: 'var(--spacing-sm)'}}>Rendimiento por Materias</h3>
+                  {gradesBySubject.labels.length > 0 ? (
+                    <GradeChart data={gradesBySubject} type="bar" />
+                  ) : (
+                    <div style={{padding: 'var(--spacing-md)', textAlign: 'center', color: 'var(--text-secondary)'}}>
+                      Añade calificaciones para ver estadísticas
+                    </div>
+                  )}
+                </div>
+                
+                <h3 style={{ marginTop: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>Detalle por materia</h3>
+                
+                {Object.entries(
+                  // Calculate stats by subject
+                  SUBJECTS.reduce((acc, subject) => {
+                    const subjectTasks = tasksWithGrades.filter(task => task.subject === subject);
+                    const subjectExams = examsWithGrades.filter(exam => exam.subject === subject);
+                    
+                    const totalItems = subjectTasks.length + subjectExams.length;
+                    if (totalItems === 0) return acc;
+                    
+                    const totalTaskGrade = subjectTasks.reduce((sum, task) => sum + task.grade, 0);
+                    const totalExamGrade = subjectExams.reduce((sum, exam) => sum + exam.grade, 0);
+                    const avgGrade = (totalTaskGrade + totalExamGrade) / totalItems;
+                    
+                    acc[subject] = {
+                      totalItems,
+                      avgGrade: parseFloat(avgGrade.toFixed(2)),
+                      tasksCount: subjectTasks.length,
+                      examsCount: subjectExams.length
+                    };
+                    
+                    return acc;
+                  }, {})
+                )
+                .sort(([, a], [, b]) => b.avgGrade - a.avgGrade)
+                .map(([subject, stats]) => (
+                  <div key={subject} className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>{subject}</h3>
+                      <span className={`grade-badge ${getGradeClass(stats.avgGrade)}`}>
+                        {stats.avgGrade.toFixed(1)}/10
+                      </span>
+                    </div>
+                    <p style={{ marginTop: 'var(--spacing-xs)', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                      {stats.totalItems} {stats.totalItems === 1 ? 'ítem' : 'ítems'} ({stats.tasksCount} tareas, {stats.examsCount} exámenes)
+                    </p>
+                    {/* Performance bar */}
+                    <div style={{ 
+                      height: '4px', 
+                      background: 'var(--bg-tertiary)', 
+                      borderRadius: '2px', 
+                      overflow: 'hidden',
+                      marginTop: 'var(--spacing-sm)'
+                    }}>
+                      <div style={{ 
+                        width: `${stats.avgGrade * 10}%`, 
+                        height: '100%', 
+                        background: getGradeClass(stats.avgGrade) === 'high' ? 'var(--success)' : 
+                          getGradeClass(stats.avgGrade) === 'medium' ? 'var(--warning)' : 'var(--error)',
+                        transition: 'width 1s ease'
+                      }}></div>
+                    </div>
+                  </div>
+                ))
+                }
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    function SettingsPage() {
+      const [settings, setSettings] = useState({
+        notifications: true,
+        darkMode: true,
+        suggestions: true
+      });
+      
+      const handleSettingsChange = (newSettings) => {
+        setSettings(newSettings);
+        // Save settings to localStorage
+        localStorage.setItem('appSettings', JSON.stringify(newSettings));
+        
+        // Apply settings
+        if (newSettings.notifications) {
+          requestNotificationPermission();
+        }
+        
+        // We could implement theme changing if we had a light theme
+      };
+      
+      useEffect(() => {
+        // Load settings from localStorage
+        const savedSettings = localStorage.getItem('appSettings');
+        if (savedSettings) {
+          setSettings(JSON.parse(savedSettings));
+        }
+      }, []);
+      
+      return (
+        <div className="page-transition container">
+          <div className="card">
+            <h3 style={{marginBottom: 'var(--spacing-sm)'}}>Preferencias</h3>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Notificaciones</div>
+                <div className="settings-option-description">Recibir recordatorios de tareas y exámenes</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.notifications}
+                  onChange={e => handleSettingsChange({...settings, notifications: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Modo oscuro</div>
+                <div className="settings-option-description">Usar tema oscuro en la aplicación</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.darkMode}
+                  onChange={e => handleSettingsChange({...settings, darkMode: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div className="settings-option">
+              <div>
+                <div className="settings-option-label">Sugerencias automáticas</div>
+                <div className="settings-option-description">Mostrar sugerencias basadas en actividades</div>
+              </div>
+              <label className="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  checked={settings.suggestions}
+                  onChange={e => handleSettingsChange({...settings, suggestions: e.target.checked})}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          
+          <div className="card" style={{marginTop: 'var(--spacing-md)'}}>
+            <h3 style={{marginBottom: 'var(--spacing-sm)'}}>Acerca de</h3>
+            <p style={{fontSize: '14px', color: 'var(--text-secondary)'}}>
+              Aplicación para gestión de tareas escolares y calificaciones.
+            </p>
+            <div style={{marginTop: 'var(--spacing-md)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px'}}>
+              Versión 1.2.0
+              <div style={{marginTop: 'var(--spacing-sm)', fontStyle: 'italic'}}>
+                Desarrollado con ❤️ por TheMart
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('tasks');
+      const [notifications, setNotifications] = useState([]);
+      const [pageTransition, setPageTransition] = useState(false);
+      const [showSettingsModal, setShowSettingsModal] = useState(false);
+      const [settings, setSettings] = useState({
+        notifications: true,
+        darkMode: true,
+        suggestions: true
+      });
+      
+      // Load settings from localStorage
+      useEffect(() => {
+        const savedSettings = localStorage.getItem('appSettings');
+        if (savedSettings) {
+          setSettings(JSON.parse(savedSettings));
+        }
+      }, []);
+      
+      // Handle tab changes with transition
+      const handleTabChange = (tab) => {
+        if (tab === activeTab) return;
+        
+        setPageTransition(true);
+        setTimeout(() => {
+          setActiveTab(tab);
+          setPageTransition(false);
+        }, 300);
+      };
+      
+      useEffect(() => {
+        // Request notification permission on app load if settings allow
+        if (settings.notifications) {
+          requestNotificationPermission();
+        }
+        
+        // Schedule notifications for existing tasks
+        const schedulePendingTaskNotifications = async () => {
+          const tasks = await room.collection('task').getList();
+          const pendingTasks = tasks.filter(task => !task.completed && new Date(task.due_date) > new Date());
+          
+          for (const task of pendingTasks) {
+            scheduleTaskNotifications(task);
+          }
+        };
+        
+        schedulePendingTaskNotifications();
+      }, [settings.notifications]);
+      
+      const showNotification = (message, type = 'info') => {
+        const newNotification = { id: Date.now(), message, type };
+        setNotifications(prev => [...prev, newNotification]);
+        
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
+        }, 5000);
+      };
+      
+      // Render the active tab
+      const renderActiveTab = () => {
+        switch (activeTab) {
+          case 'tasks':
+            return <TasksPage />;
+          case 'exams':
+            return <ExamsPage />;
+          case 'notes':
+            return <NotesPage />;
+          case 'stats':
+            return <StatsPage />;
+          case 'settings':
+            return <SettingsPage />;
+          default:
+            return <TasksPage />;
+        }
+      };
+      
+      return (
+        <>
+          <header>
+            <h1>
+              {activeTab === 'tasks' && 'Tareas'}
+              {activeTab === 'exams' && 'Exámenes'}
+              {activeTab === 'notes' && 'Notas'}
+              {activeTab === 'stats' && 'Estadísticas'}
+              {activeTab === 'settings' && 'Ajustes'}
+            </h1>
+          </header>
+          
+          {renderActiveTab()}
+          
+          <div className="bottom-nav">
+            <div 
+              className={`nav-item ${activeTab === 'tasks' ? 'active' : ''}`}
+              onClick={() => handleTabChange('tasks')}
+            >
+              <i className="material-icons-round">assignment</i>
+              <span>Tareas</span>
+            </div>
+            <div 
+              className={`nav-item ${activeTab === 'exams' ? 'active' : ''}`}
+              onClick={() => handleTabChange('exams')}
+            >
+              <i className="material-icons-round">school</i>
+              <span>Exámenes</span>
+            </div>
+            <div 
+              className={`nav-item ${activeTab === 'notes' ? 'active' : ''}`}
+              onClick={() => handleTabChange('notes')}
+            >
+              <i className="material-icons-round">note</i>
+              <span>Notas</span>
+            </div>
+            <div 
+              className={`nav-item ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => handleTabChange('stats')}
+            >
+              <i className="material-icons-round">bar_chart</i>
+              <span>Stats</span>
+            </div>
+            <div 
+              className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+              onClick={() => handleTabChange('settings')}
+            >
+              <i className="material-icons-round">settings</i>
+              <span>Ajustes</span>
+            </div>
+          </div>
+          
+          <NotificationArea notifications={notifications} />
+          
+          <div className="app-footer">
+            Desarrollado con ❤️ por TheMart
+          </div>
+        </>
+      );
+    }
+    
+    // Initialize the app
+    ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    
+    // Register service worker for notifications
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('sw.js');
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        } catch (error) {
+          console.log('ServiceWorker registration failed: ', error);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
